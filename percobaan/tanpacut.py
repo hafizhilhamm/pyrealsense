@@ -73,7 +73,7 @@ try:
 
              
         images = np.hstack((color_image, depth_colormap))
-        # print(template_size)
+        print(template_size)
         cv2.imshow("window2", images)
         cv2.imshow("depth", depth_colormap)
         cv2.imshow("cut", template)
