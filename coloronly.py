@@ -13,7 +13,7 @@ config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 pipeline.start(config)
 
-max_distance = 3350
+max_distance = 10000
 
 try:
     while True:
@@ -52,38 +52,38 @@ try:
         dil = cv2.dilate(keni, kernel)
         contours, hierarchy = cv2.findContours(dil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for i, contour in enumerate(contours):
-            area = cv2.contourArea(contour)
-            if(  area ):
-             cv2.drawContours(result, contours, i, (0, 0, 255), 2)
-             print("Area of object {}: {:.2f} pixels".format(i+1, area))
-             moments = cv2.moments(contour)
-             center_x = int(moments['m10'] / moments['m00'])
-             center_y = int(moments['m01'] / moments['m00'])
-             distance = depth_frame.get_distance(center_x, center_y)
-             cv2.circle(result, (center_x,center_y), 5, (0,255,255), cv2.FILLED)
-             print("jarak gawang  : {:.2f} meters".format(distance))
-
         hsving = cv2.cvtColor(color_image,cv2.COLOR_BGR2HSV)
 
         graying = cv2.cvtColor(color_image,cv2.COLOR_BGR2GRAY)
 
-        lower_white = np.array([0,74,3], dtype=np.uint8)
-        upper_white = np.array([45,136,81], dtype=np.uint8)
+        lower= np.array([0,74,3], dtype=np.uint8)
+        upper = np.array([45,136,81], dtype=np.uint8)
 
-        mask = cv2.inRange(hsving , lower_white, upper_white)
-        moments2 = cv2.moments(mask)
-        center_x = int(moments2['m10'] / moments2['m00'])
-        center_y = int(moments2['m01'] / moments2['m00'])
+        mask = cv2.inRange(hsving , lower, upper)
+        moments = cv2.moments(mask)
+        center_x = int(moments['m10'] / moments['m00'])
+        center_y = int(moments['m01'] / moments['m00'])
         cv2.circle(mask, (center_x,center_y), 5, (0,255,255), cv2.FILLED)
         distance = depth_frame.get_distance(center_x, center_y)
         print("jarak : {:.2f} meters".format(distance))
+
+        lower2 = np.array([90,28,172], dtype=np.uint8)
+        upper2 = np.array([158,165,225], dtype=np.uint8)
+
+        mask2 = cv2.inRange(hsving , lower2, upper2)
+        moments2 = cv2.moments(mask2)
+        center_x2 = int(moments2['m10'] / moments2['m00'])
+        center_y2 = int(moments2['m01'] / moments2['m00'])
+        cv2.circle(mask2, (center_x2,center_y2), 5, (0,255,255), cv2.FILLED)
+        distance = depth_frame.get_distance(center_x2, center_y2)
+        print("jarak gawang: {:.2f} meters".format(distance))
             
         #print(center_y)
         images = np.hstack((color_image, depth_colormap))
-
+        masked = np.hstack((mask,mask2))
         # print(template_size)
         cv2.imshow("window", images)
+        cv2.imshow("windoww", masked)
         #cv2.imshow("window2", dil)
         #cv2.imshow("depth", depth_colormap)
         #cv2.imshow("cut", template)
