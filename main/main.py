@@ -13,7 +13,7 @@ config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 pipeline.start(config)
 
-max_distance = 3350
+max_distance = 10000
 
 try:
     while True:
@@ -34,62 +34,48 @@ try:
             cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET
         )
 
-        graydepth = cv2.cvtColor(depth_colormap,cv2.COLOR_BGR2GRAY)
-        graylap = cv2.cvtColor(template,cv2.COLOR_BGR2GRAY)
+        hsving = cv2.cvtColor(color_image,cv2.COLOR_BGR2HSV)
 
-        blurgdepth = cv2.GaussianBlur(graydepth,(7,7),0)
-        blurglap = cv2.GaussianBlur(graylap,(7,7),0)
+        graying = cv2.cvtColor(hsving,cv2.COLOR_BGR2GRAY)
 
-        foreground = cv2.subtract(blurgdepth,blurglap)
+        lower_white = np.array([87,14,137], dtype=np.uint8)
+        upper_white = np.array([113,32,255], dtype=np.uint8)
 
-        binary =  cv2.threshold(foreground , 25 , 255 , cv2.THRESH_BINARY)[1]
-
-        result = np.zeros_like(depth_colormap)
-        result = cv2.bitwise_and(depth_colormap, depth_colormap, mask=binary)
+        mask = cv2.inRange(hsving , lower_white, upper_white)
         
-        keni = cv2.Canny(binary,100,200)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        dil = cv2.dilate(keni, kernel)
-        contours, hierarchy = cv2.findContours(dil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for i, contour in enumerate(contours):
             area = cv2.contourArea(contour)
-            if(  area ):
-             cv2.drawContours(result, contours, i, (0, 0, 255), 2)
-             print("Area of object {}: {:.2f} pixels".format(i+1, area))
+            if( 2000 < area < 8000 ):
+             cv2.drawContours(mask, contours, i, (0, 0, 255), 2)
+             #print("Area of object {}: {:.2f} pixels".format(i+1, area))
              moments = cv2.moments(contour)
              center_x = int(moments['m10'] / moments['m00'])
              center_y = int(moments['m01'] / moments['m00'])
              distance = depth_frame.get_distance(center_x, center_y)
-             cv2.circle(result, (center_x,center_y), 5, (0,255,255), cv2.FILLED)
+             cv2.circle(mask, (center_x,center_y), 8, (0,0,0), cv2.FILLED)
              print("jarak gawang  : {:.2f} meters".format(distance))
 
-        hsving = cv2.cvtColor(color_image,cv2.COLOR_BGR2HSV)
+        lower = np.array([0,74,3], dtype=np.uint8)
+        upper = np.array([45,136,81], dtype=np.uint8)
 
-        graying = cv2.cvtColor(color_image,cv2.COLOR_BGR2GRAY)
+        mask2 = cv2.inRange(hsving , lower, upper)
+        moments2 = cv2.moments(mask2)
+        center_x2 = int(moments2['m10'] / moments2['m00'])
+        center_y2 = int(moments2['m01'] / moments2['m00'])
+        cv2.circle(mask2, (center_x2,center_y2), 8, (0,0,255), cv2.FILLED)
+        distance2 = depth_frame.get_distance(center_x2, center_y2)
+        print("jarak : {:.2f} meters".format(distance2))
 
-        lower_white = np.array([0,74,3], dtype=np.uint8)
-        upper_white = np.array([45,136,81], dtype=np.uint8)
-
-        mask = cv2.inRange(hsving , lower_white, upper_white)
-        moments2 = cv2.moments(mask)
-        center_x = int(moments2['m10'] / moments2['m00'])
-        center_y = int(moments2['m01'] / moments2['m00'])
-        cv2.circle(mask, (center_x,center_y), 5, (0,255,255), cv2.FILLED)
-        distance = depth_frame.get_distance(center_x, center_y)
-        print("jarak : {:.2f} meters".format(distance))
-            
         #print(center_y)
         images = np.hstack((color_image, depth_colormap))
-
+        images2 = np.hstack((mask, mask2))
         # print(template_size)
         cv2.imshow("window", images)
+        cv2.imshow("window2", images2)
         #cv2.imshow("window2", dil)
-        #cv2.imshow("depth", depth_colormap)
-        #cv2.imshow("cut", template)
-        cv2.imshow("mask",mask)
-        cv2.imshow("hasil",result)
-      
+        cv2.imshow("windoww", mask)
         if cv2.waitKey(1) == 27:
             break
 finally:

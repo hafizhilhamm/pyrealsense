@@ -63,7 +63,7 @@ try:
         moments = cv2.moments(mask)
         center_x = int(moments['m10'] / moments['m00'])
         center_y = int(moments['m01'] / moments['m00'])
-        cv2.circle(mask, (center_x,center_y), 5, (0,255,255), cv2.FILLED)
+        cv2.circle(mask, (center_x,center_y), 8, (0,0,255), cv2.FILLED)
         distance = depth_frame.get_distance(center_x, center_y)
         print("jarak : {:.2f} meters".format(distance))
 
@@ -74,7 +74,7 @@ try:
         moments2 = cv2.moments(mask2)
         center_x2 = int(moments2['m10'] / moments2['m00'])
         center_y2 = int(moments2['m01'] / moments2['m00'])
-        cv2.circle(mask2, (center_x2,center_y2), 5, (0,255,255), cv2.FILLED)
+        cv2.circle(mask2, (center_x2,center_y2), 8, (0,0,255), cv2.FILLED)
         distance = depth_frame.get_distance(center_x2, center_y2)
         print("jarak gawang: {:.2f} meters".format(distance))
             
