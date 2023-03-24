@@ -56,7 +56,7 @@ while True:
     # Perform color segmentation
     mask = cv2.inRange(hsv_image, lower_color, upper_color)
     result = cv2.bitwise_and(color_image, color_image, mask=mask)
-
+    print(h_min ,",",s_min,",",v_min,",",h_max,",",s_max,",",v_max)
     # Display the resulting image
     cv2.imshow('Result', result)
 
