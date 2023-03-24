@@ -10,10 +10,22 @@ config = rs.config()
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
+def on_trackbar(val):
+    pass
+
+# Create a window for trackbars
+cv2.namedWindow('Trackbars')
+
+# Define initial values for trackbars
+min_distance = 0
+max_distance = 10000
+
+# Create trackbars for HSV range
+cv2.createTrackbar('Min distance', 'Trackbars', min_distance, 10000, on_trackbar)
+cv2.createTrackbar('Max distance', 'Trackbars', max_distance, 10000 , on_trackbar)
+
 
 pipeline.start(config)
-
-max_distance = 3350
 
 try:
     while True:
@@ -26,9 +38,11 @@ try:
         depth_image = np.asanyarray(depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
 
+        max_distance = cv2.getTrackbarPos('Max distance', 'Trackbars')
+        min_distance = cv2.getTrackbarPos('Min distance', 'Trackbars')
         
-        depth_image[depth_image > max_distance] = 0
-
+        depth_image[ depth_image > max_distance] = 0
+        depth_image[ depth_image < min_distance] = 0
        
         depth_colormap = cv2.applyColorMap(
             cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET
@@ -54,7 +68,7 @@ try:
 
         for i, contour in enumerate(contours):
             area = cv2.contourArea(contour)
-            if(  area ):
+            if( 18000 <  area < 30000 ):
              cv2.drawContours(result, contours, i, (0, 0, 255), 2)
              print("Area of object {}: {:.2f} pixels".format(i+1, area))
              moments = cv2.moments(contour)
