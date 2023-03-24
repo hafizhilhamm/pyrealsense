@@ -67,7 +67,7 @@ try:
              center_x = int(moments['m10'] / moments['m00'])
              center_y = int(moments['m01'] / moments['m00'])
              distance = depth_frame.get_distance(center_x, center_y)
-             cv2.circle(mask, (center_x,center_y), 6, (0,0,0), cv2.FILLED)
+             cv2.circle(mask, (center_x,center_y), 6, (0,255,0), cv2.FILLED)
              print("jarak gawang  : {:.2f} meters".format(distance))
 
         lower = np.array([0,61,28], dtype=np.uint8)
